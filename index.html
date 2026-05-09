@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevDesign Manager - Vytor Carvalho</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Playfair+Display:wght@700;900&display=swap');
+
+        @media print { 
+            .no-print { display: none !important; } 
+            .print-only { display: block !important; } 
+            body { background: white !important; color: black !important; } 
+        }
+        
+        .print-only { display: none; }
+        .hidden { display: none; }
+        .modal-bg { background-color: rgba(0,0,0,0.9); }
+        
+        /* Estilização Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+
+        .font-serif-premium { font-family: 'Playfair Display', serif; }
+        .font-sans-clean { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans-clean leading-relaxed">
+
+    <!-- TELA DE LOGIN -->
+    <div id="auth-screen" class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-slate-900 p-10 rounded-3xl shadow-2xl w-full max-w-md border border-slate-800">
+            <div class="text-center mb-8">
+                <h2 id="auth-title" class="text-4xl font-black text-blue-500 uppercase tracking-tighter italic">VYTOR-SYSTEM</h2>
+                <p id="auth-subtitle" class="text-slate-500 text-sm mt-2 font-bold uppercase tracking-widest">Vytor Carvalho Edition</p>
+            </div>
+            <div class="space-y-4">
+                <input type="text" id="user-email" placeholder="Usuário" class="w-full p-4 bg-slate-950 rounded-2xl border border-slate-800 focus:ring-2 focus:ring-blue-600 outline-none transition">
+                <input type="password" id="user-pass" placeholder="Senha" class="w-full p-4 bg-slate-950 rounded-2xl border border-slate-800 focus:ring-2 focus:ring-blue-600 outline-none transition">
+                <button onclick="handleAuth()" id="btn-auth" class="w-full bg-blue-600 hover:bg-blue-700 p-5 rounded-2xl font-black text-lg shadow-xl transition transform hover:scale-[1.02]">ACESSAR SISTEMA</button>
+            </div>
+            <p class="text-center mt-8 text-slate-500 text-xs font-bold uppercase tracking-widest">
+                <span id="auth-switch-text">Não possui acesso?</span> 
+                <a href="#" onclick="toggleAuthMode()" id="auth-link" class="text-blue-500 hover:underline">Solicitar Conta</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- APP PRINCIPAL -->
+    <div id="main-app" class="hidden min-h-screen flex flex-col no-print">
+        <!-- Menu Superior -->
+        <nav class="bg-slate-900/50 backdrop-blur-md border-b border-slate-800 p-5 sticky top-0 z-40 shadow-xl">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-black text-white tracking-tighter italic">VYTOR-SYSTEM_01 <span class="text-blue-600 italic">VS</span></h1>
+                </div>
+                <div class="hidden md:flex gap-10 font-black text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                    <button onclick="showSection('dash')" class="hover:text-blue-500 transition">Dashboard</button>
+                    <button onclick="showSection('novo')" class="hover:text-blue-500 transition">Novo Serviço</button>
+                    <button onclick="showSection('squads')" class="hover:text-yellow-500 transition">Squads</button>
+                    <button onclick="showSection('relatorio')" class="hover:text-blue-500 transition">Relatórios</button>
+                </div>
+                <button onclick="logout()" class="bg-red-500/10 text-red-500 text-[10px] font-black px-4 py-2 rounded-full border border-red-500/20 hover:bg-red-500 hover:text-white transition uppercase">Sair</button>
+            </div>
+        </nav>
+
+        <main class="flex-grow max-w-7xl w-full mx-auto p-6 md:p-10">
+            
+            <!-- SEÇÃO DASHBOARD -->
+            <section id="sec-dash">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10 text-center md:text-left">
+                    <div class="bg-slate-900 p-8 rounded-3xl border border-slate-800 shadow-2xl relative overflow-hidden group">
+                        <div class="absolute right-[-20px] bottom-[-20px] text-8xl opacity-[0.03] font-black italic">VC</div>
+                        <p class="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">Receita Total</p>
+                        <h3 class="text-5xl font-black text-white mt-3 tracking-tighter">R$ <span id="total-lucro">0,00</span></h3>
+                    </div>
+                    <div class="bg-slate-900 p-8 rounded-3xl border border-slate-800 border-l-4 border-l-blue-600 shadow-xl">
+                        <p class="text-blue-500 text-[10px] font-black uppercase tracking-[0.2em]">Design Gráfico</p>
+                        <h3 class="text-3xl font-black mt-2 tracking-tighter text-white">R$ <span id="lucro-design">0,00</span></h3>
+                    </div>
+                    <div class="bg-slate-900 p-8 rounded-3xl border border-slate-800 border-l-4 border-l-indigo-600 shadow-xl">
+                        <p class="text-indigo-500 text-[10px] font-black uppercase tracking-[0.2em]">Serviços de TI</p>
+                        <h3 class="text-3xl font-black mt-2 tracking-tighter text-white">R$ <span id="lucro-ti">0,00</span></h3>
+                    </div>
+                </div>
+                <div class="bg-slate-900 p-8 rounded-3xl border border-slate-800 shadow-2xl">
+                    <canvas id="lucroChart" height="100"></canvas>
+                </div>
+            </section>
+
+            <!-- SEÇÃO NOVO SERVIÇO -->
+            <section id="sec-novo" class="hidden max-w-2xl mx-auto">
+                <div class="bg-slate-900 p-10 rounded-3xl border border-slate-800 shadow-2xl">
+                    <div class="flex justify-between items-center mb-8 border-b border-slate-800 pb-6">
+                        <h2 id="form-title" class="text-3xl font-black uppercase italic tracking-tighter">Emitir Job</h2>
+                        <button onclick="showSection('dash')" class="text-slate-500 hover:text-white uppercase text-[10px] font-bold">Cancelar</button>
+                    </div>
+                    <input type="hidden" id="edit-index">
+                    <div class="space-y-6">
+                        <input type="text" id="f-cliente" placeholder="Cliente / Empresa" class="w-full p-4 bg-slate-950 rounded-2xl border border-slate-800 focus:border-blue-600 outline-none transition text-white">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <input type="number" id="f-valor" placeholder="Valor (R$)" class="w-full p-4 bg-slate-950 rounded-2xl border border-slate-800 outline-none text-white">
+                            <select id="f-tipo" class="w-full p-4 bg-slate-950 rounded-2xl border border-slate-800 outline-none text-white">
+                                <option value="Design Gráfico">Design Gráfico</option>
+                                <option value="Técnico em TI">Técnico em TI</option>
+                            </select>
+                        </div>
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Atribuir a Squad Especialista</label>
+                        <select id="f-squad" class="w-full p-4 bg-slate-950 rounded-2xl border border-slate-800 text-yellow-500 font-bold outline-none transition">
+                            <option value="">Atuação Solo (Vytor Carvalho)</option>
+                        </select>
+                        <textarea id="f-desc" rows="4" placeholder="Descrição técnica do serviço..." class="w-full p-4 bg-slate-950 rounded-2xl border border-slate-800 outline-none text-white transition"></textarea>
+                        <button onclick="salvarServico()" class="w-full bg-blue-600 hover:bg-blue-700 p-6 rounded-2xl font-black text-xl shadow-2xl transition">SALVAR E GERAR RECIBO</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SQUADS -->
+            <section id="sec-squads" class="hidden">
+                <div class="flex justify-between items-center mb-10">
+                    <h2 class="text-3xl font-black uppercase italic tracking-tighter">Colaboração & Squads</h2>
+                    <button onclick="abrirModalSquad()" class="bg-yellow-600 hover:bg-yellow-700 text-black px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">Novo Squad</button>
+                </div>
+                <div id="lista-squads" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+            </section>
+
+            <!-- RELATÓRIO -->
+            <section id="sec-relatorio" class="hidden">
+                <h2 class="text-3xl font-black uppercase italic tracking-tighter mb-10">Histórico Financeiro</h2>
+                <div class="bg-slate-900 rounded-3xl border border-slate-800 shadow-2xl overflow-hidden overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-800 text-slate-500 text-[10px] uppercase font-black tracking-widest border-b border-slate-800">
+                            <tr>
+                                <th class="p-6">Data</th>
+                                <th class="p-6">Cliente</th>
+                                <th class="p-6">Squad / Área</th>
+                                <th class="p-6">Valor</th>
+                                <th class="p-6 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-corpo"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL SQUAD -->
+    <div id="modal-squad" class="hidden fixed inset-0 modal-bg z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 w-full max-w-md rounded-3xl border border-slate-700 p-10 shadow-2xl">
+            <h3 class="text-2xl font-black uppercase mb-8 text-yellow-500 italic tracking-tighter">Novo Squad de Trabalho</h3>
+            <div class="space-y-6">
+                <input type="text" id="sq-nome" placeholder="Nome do Squad" class="w-full p-4 bg-slate-950 rounded-2xl border border-slate-800 outline-none transition">
+                <textarea id="sq-membros" placeholder="Membros (Ex: Vytor, João, Maria...)" class="w-full p-4 bg-slate-950 rounded-2xl border border-slate-800 h-32 outline-none transition"></textarea>
+                <div class="flex gap-4">
+                    <button onclick="salvarSquad()" class="flex-1 bg-yellow-600 text-black font-black p-5 rounded-2xl uppercase shadow-xl transition hover:bg-yellow-700">Salvar Squad</button>
+                    <button onclick="fecharModalSquad()" class="flex-1 bg-slate-800 p-5 rounded-2xl uppercase font-black transition hover:bg-slate-700">Voltar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALHES -->
+    <div id="modal-detalhes" class="hidden fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 no-print">
+        <div class="bg-slate-900 w-full max-w-xl rounded-[40px] border border-slate-700 shadow-2xl p-10 animate-in">
+            <div class="flex justify-between items-start mb-8">
+                <div>
+                    <h3 class="text-3xl font-black uppercase italic text-blue-500 tracking-tighter italic">Detalhes do Trabalho</h3>
+                    <p id="det-data" class="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1"></p>
+                </div>
+                <button onclick="fecharModal()" class="text-slate-600 hover:text-white text-3xl transition">&times;</button>
+            </div>
+            <div id="modal-content" class="space-y-6 border-t border-slate-800 pt-6">
+                <!-- Preenchido via JS -->
+            </div>
+            <div class="mt-12 flex flex-wrap gap-4">
+                <button id="btn-reprint" class="flex-1 bg-white text-black hover:bg-slate-200 p-5 rounded-2xl font-black uppercase text-xs transition">Imprimir</button>
+                <button id="btn-edit-modal" class="flex-1 bg-blue-600 hover:bg-blue-700 p-5 rounded-2xl font-black uppercase text-xs transition">Editar</button>
+                <button id="btn-delete-modal" class="flex-1 bg-red-600 hover:bg-red-700 p-5 rounded-2xl font-black uppercase text-xs transition">Excluir</button>
+                <button id="btn-whats" class="w-full bg-green-600 hover:bg-green-700 p-5 rounded-2xl font-black uppercase text-xs transition flex items-center justify-center gap-3">WhatsApp</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECIBO PREMIUM -->
+    <div id="recibo-impressao" class="print-only p-12 bg-white text-slate-900 h-screen font-serif-premium">
+        <div class="flex justify-between items-start border-b-2 border-slate-900 pb-10">
+            <div>
+                <h1 class="text-5xl font-black tracking-tighter text-slate-900 mb-2">VYTOR CARVALHO</h1>
+                <p class="text-sm uppercase tracking-[0.3em] font-sans-clean text-slate-500 font-bold italic">DESIGNER GRÁFICO &¨SOLUÇÕES DE TI</p>
+            </div>
+            <div class="text-right font-sans-clean">
+                <h2 class="text-2xl font-black uppercase tracking-tighter mb-1 font-black italic">RECIBO</h2>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">EMISSÃO: <span id="p-data" class="text-slate-900 font-bold"></span></p>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-12 my-14 font-sans-clean">
+            <div>
+                <p class="text-[10px] uppercase font-black text-slate-400 mb-3 tracking-[0.2em]">Recebido de:</p>
+                <p id="p-cliente" class="text-2xl font-black text-slate-900 border-b border-slate-200 pb-2 italic uppercase"></p>
+            </div>
+            <div class="bg-slate-50 p-8 rounded-3xl border border-slate-100 text-right">
+                <p class="text-[10px] uppercase font-black text-slate-400 mb-2 tracking-[0.2em]">Valor Total Quitado</p>
+                <p class="text-5xl font-black text-slate-900 font-mono tracking-tighter italic">R$ <span id="p-valor"></span></p>
+            </div>
+        </div>
+        <div class="w-full mt-10 font-sans-clean">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b-2 border-slate-900 text-left text-[10px] uppercase font-black tracking-widest">
+                        <th class="py-6 px-2">Discriminação Detalhada</th>
+                        <th class="py-6 px-2 text-right">Área Técnica</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-slate-100">
+                        <td class="py-8 px-2 align-top text-xl font-medium italic" id="p-desc"></td>
+                        <td class="py-8 px-2 text-right align-top">
+                            <span id="p-tipo" class="bg-slate-900 text-white px-4 py-2 text-[9px] font-black uppercase rounded-lg"></span>
+                            <br><small id="p-squad-display" class="text-blue-600 italic font-black text-[10px] uppercase tracking-widest"></small>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-auto pt-40 flex justify-between gap-24 font-sans-clean text-center">
+            <div class="flex-1 border-t border-slate-300 pt-6">
+                <p class="text-lg font-black text-slate-900 italic uppercase">Vytor Carvalho</p>
+                <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest">Responsável Técnico</p>
+            </div>
+            <div class="flex-1 border-t border-slate-300 pt-6">
+                <p class="text-sm font-black text-slate-900 uppercase">Assinatura do Cliente</p>
+                <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest italic">Confirmação de Quitação</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJwLq75TjWDfbwZsPdfEpq6Ntn3V-AGmBrXXBBV1cAoOhWkeSRLxWCaDTLAhyN0yc/exec";
+        
+        const squadsIniciais = [
+            {nome: "Advisory Board", membros: "Diretoria Estratégica"},
+            {nome: "Brand Squad", membros: "Design de Marca & Branding"},
+            {nome: "Claude Code Mastery", membros: "Desenvolvimento & AI"},
+            {nome: "C-Level Squad", membros: "Executivos"},
+            {nome: "Copy Squad", membros: "Redação & Copywriting"},
+            {nome: "Cybersecurity", membros: "Segurança da Informação"},
+            {nome: "Data Squad", membros: "Análise de Dados & BI"},
+            {nome: "Design Squad", membros: "Artes & Visual"},
+            {nome: "Hormozi Squad", membros: "Oferta & Escala"},
+            {nome: "Movement", membros: "Tráfego & Performance"},
+            {nome: "Storytelling", membros: "Narrativa & Vídeo"},
+            {nome: "Traffic Masters", membros: "Gestão de Anúncios"}
+        ];
+
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let services = JSON.parse(localStorage.getItem('services')) || [];
+        let squads = JSON.parse(localStorage.getItem('squads')) || squadsIniciais;
+
+        if (!localStorage.getItem('squads')) localStorage.setItem('squads', JSON.stringify(squadsIniciais));
+
+        function handleAuth() {
+            const email = document.getElementById('user-email').value;
+            const pass = document.getElementById('user-pass').value;
+            if (users.find(u => u.email === email && u.pass === pass)) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                renderDash();
+            } else { alert("Acesso Negado."); }
+        }
+
+        function toggleAuthMode() {
+            const email = document.getElementById('user-email').value;
+            const pass = document.getElementById('user-pass').value;
+            if(email && pass) {
+                users.push({email, pass});
+                localStorage.setItem('users', JSON.stringify(users));
+                alert("Cadastro Realizado!");
+            } else { alert("Preencha os campos para cadastrar."); }
+        }
+
+        function logout() { location.reload(); }
+
+        function showSection(sec) {
+            ['sec-dash', 'sec-novo', 'sec-relatorio', 'sec-squads'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById('sec-' + sec).classList.remove('hidden');
+            if (sec === 'dash') renderDash();
+            if (sec === 'relatorio') renderRelatorio();
+            if (sec === 'squads') renderSquads();
+            if (sec === 'novo') { carregarSquadsNoSelect(); if (!document.getElementById('edit-index').value) resetForm(); }
+        }
+
+        function resetForm() { document.getElementById('edit-index').value = ""; document.getElementById('f-cliente').value = ""; document.getElementById('f-valor').value = ""; document.getElementById('f-desc').value = ""; document.getElementById('f-squad').value = ""; }
+
+        function renderDash() {
+            const dVal = services.filter(s => s.tipo === 'Design Gráfico').reduce((acc, s) => acc + parseFloat(s.valor), 0);
+            const tVal = services.filter(s => s.tipo === 'Técnico em TI').reduce((acc, s) => acc + parseFloat(s.valor), 0);
+            document.getElementById('total-lucro').innerText = (dVal + tVal).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            document.getElementById('lucro-design').innerText = dVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            document.getElementById('lucro-ti').innerText = tVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            const ctx = document.getElementById('lucroChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: { labels: services.map(s => s.data).slice(-10), datasets: [{ label: 'Ganhos R$', data: services.map(s => s.valor).slice(-10), borderColor: '#3b82f6', fill: true, tension: 0.4 }] },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function carregarSquadsNoSelect() { document.getElementById('f-squad').innerHTML = '<option value="">Atuação Solo (Vytor Carvalho)</option>' + squads.map(s => `<option value="${s.nome}">${s.nome}</option>`).join(''); }
+
+        function salvarServico() {
+            const index = document.getElementById('edit-index').value;
+            const dados = { cliente: document.getElementById('f-cliente').value, valor: document.getElementById('f-valor').value, tipo: document.getElementById('f-tipo').value, squad: document.getElementById('f-squad').value, desc: document.getElementById('f-desc').value, data: index !== "" ? services[index].data : new Date().toLocaleDateString('pt-BR') };
+            if (index !== "") services[index] = dados; else services.push(dados);
+            localStorage.setItem('services', JSON.stringify(services));
+            imprimirRecibo(dados);
+            showSection('relatorio');
+        }
+
+        function removerServico(index) {
+            if(confirm("Deseja realmente excluir este recibo permanentemente?")) {
+                services.splice(index, 1);
+                localStorage.setItem('services', JSON.stringify(services));
+                fecharModal();
+                renderRelatorio();
+                renderDash();
+            }
+        }
+
+        function renderRelatorio() {
+            document.getElementById('tabela-corpo').innerHTML = services.map((s, index) => `
+                <tr class="border-b border-slate-800 hover:bg-slate-800/30 transition cursor-pointer" onclick="verDetalhes(${index})">
+                    <td class="p-6 text-xs text-slate-500 font-mono tracking-tighter">${s.data}</td>
+                    <td class="p-6 font-black text-blue-400 uppercase italic tracking-tighter text-lg">${s.cliente}</td>
+                    <td class="p-6"><span class="text-[9px] font-black text-slate-500 uppercase tracking-widest block">${s.tipo}</span><span class="text-[9px] text-yellow-500 font-black italic underline">${s.squad || ''}</span></td>
+                    <td class="p-6 text-white font-black text-lg">R$ ${parseFloat(s.valor).toLocaleString('pt-BR')}</td>
+                    <td class="p-6 text-center">
+                        <button onclick="event.stopPropagation(); verDetalhes(${index})" class="bg-slate-800 p-2 rounded-xl text-[10px] font-black px-4 py-1 uppercase">Ações</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function verDetalhes(index) {
+            const s = services[index];
+            document.getElementById('det-data').innerText = "Data: " + s.data;
+            document.getElementById('modal-content').innerHTML = `<h3 class="text-3xl font-black uppercase italic text-blue-500 tracking-tighter italic">${s.cliente}</h3><p class="text-green-400 text-3xl font-mono tracking-tighter">R$ ${parseFloat(s.valor).toLocaleString('pt-BR')}</p><p class="text-slate-400 uppercase text-[10px] font-black tracking-widest">${s.tipo} | SQUAD: ${s.squad || 'Solo'}</p><div class="bg-slate-950 p-8 rounded-3xl border border-slate-800 italic shadow-inner"><p class="text-slate-300 text-lg leading-relaxed italic">"${s.desc || '...'}"</p></div>`;
+            document.getElementById('btn-reprint').onclick = () => imprimirRecibo(s);
+            document.getElementById('btn-edit-modal').onclick = () => prepararEdicao(index);
+            document.getElementById('btn-delete-modal').onclick = () => removerServico(index);
+            document.getElementById('modal-detalhes').classList.remove('hidden');
+        }
+
+        function fecharModal() { document.getElementById('modal-detalhes').classList.add('hidden'); }
+
+        function prepararEdicao(index) {
+            const s = services[index]; fecharModal(); showSection('novo');
+            document.getElementById('form-title').innerText = "Editando Job";
+            document.getElementById('edit-index').value = index;
+            document.getElementById('f-cliente').value = s.cliente;
+            document.getElementById('f-valor').value = s.valor;
+            document.getElementById('f-tipo').value = s.tipo;
+            document.getElementById('f-desc').value = s.desc;
+            setTimeout(() => { document.getElementById('f-squad').value = s.squad || ""; }, 50);
+        }
+
+        function imprimirRecibo(dados) {
+            document.getElementById('p-cliente').innerText = dados.cliente.toUpperCase();
+            document.getElementById('p-valor').innerText = parseFloat(dados.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            document.getElementById('p-tipo').innerText = dados.tipo;
+            document.getElementById('p-desc').innerText = dados.desc;
+            document.getElementById('p-data').innerText = dados.data;
+            document.getElementById('p-squad-display').innerText = dados.squad ? "SQUAD RESPONSÁVEL: " + dados.squad.toUpperCase() : "ATUAÇÃO SOLO (VYTOR CARVALHO)";
+            window.print();
+        }
+
+        // Funções de Squad
+        function renderSquads() {
+            document.getElementById('lista-squads').innerHTML = squads.map((s, index) => `
+                <div class="bg-slate-900 p-8 rounded-3xl border border-slate-800 shadow-xl transition hover:border-yellow-600">
+                    <h4 class="text-xl font-black text-yellow-500 uppercase italic italic tracking-tighter italic">${s.nome}</h4>
+                    <p class="text-slate-500 mt-4 text-xs font-bold uppercase tracking-widest pt-4 italic uppercase">Foco: ${s.membros}</p>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
